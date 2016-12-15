@@ -1,5 +1,7 @@
 const jwt = require('./utils/jwt');
 const tokenUtils = require('./utils/jwt');
+const config = require('./config');
+const { jsonApiServer } = config;
 
 const express = require('express');
 const proxy = require('express-http-proxy');
@@ -30,7 +32,7 @@ app.delete('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
 app.post('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
 app.patch('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
 
-// TODO move to config
-app.use('/', proxy('http://localhost:3000'));
+app.use('/', proxy(jsonApiServer));
 
+// TODO this could probably be in config
 app.listen(4000);

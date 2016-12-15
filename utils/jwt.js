@@ -3,6 +3,7 @@ const expressJwt = require('express-jwt');
 const API_SECRET = process.env.API_SECRET || 'magic_secret_key';  //TODO add info to Readme that we should pass API_SECRET as env var
 
 if(!API_SECRET) {
+  //TODO it would be better to throw probably!
   console.warn('missing a secret for jwt');
 }
 

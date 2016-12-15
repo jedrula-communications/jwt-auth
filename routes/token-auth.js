@@ -1,5 +1,6 @@
 // TODO add refresh token
 const express = require('express');
+const request = require('request');
 const tokenUtils = require('../utils/jwt');
 const async = require('async');
 const URI = require('urijs');
@@ -8,15 +9,6 @@ const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const bodyParser = require('body-parser');
 
 const { jsonApiServer } = config;
-
-function getUser(options) {
-  const { identification, password } = options;
-  if (identification === 'admin' && password === 'whoah') {
-    callback(null, false);
-  } else {
-    callback(null, true)
-  }
-}
 
 //TODO make sure that this uses SSL
 module.exports = [bodyParser.json(), function (req, res, next) {
@@ -53,8 +45,6 @@ module.exports = [bodyParser.json(), function (req, res, next) {
     });
   }
 }];
-
-const request = require('request');
 
 function getUserRequestUrl(endpoint, identification, password) {
   const url = new URI(`${endpoint}/users`)
