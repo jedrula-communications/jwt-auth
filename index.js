@@ -27,6 +27,7 @@ app.use(function(req, res, next) {
 //end cors
 
 app.post('/tokens', require('./routes/token-auth'));
+app.post('/users', proxy(jsonApiServer));
 
 app.delete('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
 app.post('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
