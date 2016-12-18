@@ -35,4 +35,11 @@ app.patch('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
 app.use('/', proxy(jsonApiServer));
 
 // TODO this could probably be in config
-app.listen(4000);
+const port = 4000;
+app.listen(port, (err) => {
+  if(err) {
+    console.error('error in listen cb', err);
+  } else {
+    console.log(`server listening on ${port}`);
+  }
+});
