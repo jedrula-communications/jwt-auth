@@ -1,18 +1,58 @@
+const URI = require('urijs');
 const jwt = require('./utils/jwt');
 const tokenUtils = require('./utils/jwt');
 const config = require('./config');
 const { jsonApiServer } = config;
+const request = require('request');
 
 const express = require('express');
 const proxy = require('express-http-proxy');
 
 const app = express();
 
-function isAdmin(req, res, next) {
-  if (!req.user.admin) {
+function isAdmin(req) {
+  return req.user && req.user.admin;
+}
+
+//makes a GET request to json api server to see if any resource is fetched for given id for specified owner id
+function isOwner(options, cb) {
+  const { type, id, userId } = options;
+  const url = new URI(`/${type}`);
+  // TODO use soemthing more generic like owner instead of author!
+  url.addQuery('filter[author]', userId);
+  url.addQuery('filter[id]', id);
+  console.log(url.toString());
+  request(jsonApiServer + url.toString(), (err, response) => {
+    // console.log('response.body', response.body);
+    if(err) {
+      cb(err);
+    } else if(!response.body.data || !response.body.data.length) {
+      cb('did not fetch anything for this owner');
+    } else {
+      cb(response.body.errors);
+    }
+  })
+}
+
+function isAdminMiddleware(req, res, next) {
+  if (!isAdmin(req)) {
     next(new Error('only admin'));
   } else {
     next();
+  }
+}
+
+function hasRightsMiddleware(req, res, next) {
+  if (isAdmin(req)) {
+    next();
+  } else {
+    const { type, id } = req.params;
+    if(!type || !id || !req.user.id) {
+      next('missing something from options');
+    } else {
+      const options = { type, id, userId: req.user.id }
+      isOwner(options, next);
+    }
   }
 }
 
@@ -26,14 +66,43 @@ app.use(function(req, res, next) {
 });
 //end cors
 
+//all routes that do not need jwt token
 app.post('/tokens', require('./routes/token-auth'));
 app.post('/users', proxy(jsonApiServer));
+//end of all routes that do not need jwt token
 
-app.delete('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
-app.post('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
-app.patch('*', [tokenUtils.expressJwtMiddleware(), isAdmin]);
+// TODO maybe does not need to be in an array
+app.post('*', [tokenUtils.expressJwtMiddleware()]);
+// TODO make sure this catches every case
+app.delete('/:type/:id*', [tokenUtils.expressJwtMiddleware(), hasRightsMiddleware]);
+app.patch('/:type/:id*', [tokenUtils.expressJwtMiddleware(), hasRightsMiddleware]);
+
+// TODO add owned route
+
+// TODO maybe we can use app.use to DRY tokenUtils.expressJwtMiddleware()
+app.get('/posts*', tokenUtils.expressJwtMiddleware({ credentialsRequired: false }), proxy(jsonApiServer, {
+  decorateRequest: function(proxyReq, originalReq) {
+    console.log('asodihaosdih')
+    if(!isAdmin(originalReq)) {
+      const { path, method } = proxyReq;
+      if(path.startsWith('/posts') && method === 'GET') {
+        const url = new URI(path);
+        console.log('adding query public')
+        url.addQuery('filter[public]', true);
+        // TODO do something like url.addQuery('filter[author]', 'b98dd97d-ef5d-454e-8bc5-90858d9b8003') for private posts
+        proxyReq.path = url.toString();
+      }
+    }
+    return proxyReq;
+  }
+}));
 
 app.use('/', proxy(jsonApiServer));
+
+// app.use('/', (req, res, next) => {
+//   console.log('that far?');
+//   next();
+// });
 
 // TODO this could probably be in config
 const port = 4000;

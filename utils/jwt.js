@@ -28,7 +28,7 @@ module.exports = {
       }
     });
   },
-  expressJwtMiddleware() {
-    return expressJwt({ secret: API_SECRET});
+  expressJwtMiddleware(options = {}) {
+    return expressJwt(Object.assign({}, options, { secret: API_SECRET }));
   }
 }
