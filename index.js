@@ -77,12 +77,17 @@ app.post('*', [tokenUtils.expressJwtMiddleware()]);
 app.delete('/:type/:id*', [tokenUtils.expressJwtMiddleware(), hasRightsMiddleware]);
 app.patch('/:type/:id*', [tokenUtils.expressJwtMiddleware(), hasRightsMiddleware]);
 
+
+// TODO stop using TODOs wherever, use github issues ?
+// TODO style md-card with sth like border-right and border-bottom 2px solid red
+// TODO add WIP to posts so that you can see which posts are yet to be published
+// TODO fix number of tags requests in the background
+// TODO fix clearing local storage on session logout?
 // TODO add owned route
 
 // TODO maybe we can use app.use to DRY tokenUtils.expressJwtMiddleware()
 app.get('/posts*', tokenUtils.expressJwtMiddleware({ credentialsRequired: false }), proxy(jsonApiServer, {
   decorateRequest: function(proxyReq, originalReq) {
-    console.log('asodihaosdih')
     if(!isAdmin(originalReq)) {
       const { path, method } = proxyReq;
       if(path.startsWith('/posts') && method === 'GET') {
@@ -97,12 +102,23 @@ app.get('/posts*', tokenUtils.expressJwtMiddleware({ credentialsRequired: false 
   }
 }));
 
-app.use('/', proxy(jsonApiServer));
 
-// app.use('/', (req, res, next) => {
-//   console.log('that far?');
-//   next();
-// });
+const addCreationDateOptions = {
+  decorateRequest: function(proxyReq, originalReq) {
+    console.log('proxyReq styff', proxyReq);
+    console.log('=======')
+    
+    const parsed = JSON.parse(proxyReq.bodyContent)
+    parsed.data.attributes.date = Date.now();
+    proxyReq.bodyContent = JSON.stringify(parsed);
+    console.log('proxyReq styf2f', proxyReq.bodyContent );
+    return proxyReq;
+  },
+};
+
+app.post('/posts', proxy(jsonApiServer, addCreationDateOptions));
+
+app.use('/', proxy(jsonApiServer));
 
 // TODO this could probably be in config
 const port = 4000;
