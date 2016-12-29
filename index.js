@@ -103,15 +103,21 @@ app.get('/posts*', tokenUtils.expressJwtMiddleware({ credentialsRequired: false 
 }));
 
 
+// TODO add some sugar to DRY these objects
 const addCreationDateOptions = {
   decorateRequest: function(proxyReq, originalReq) {
-    console.log('proxyReq styff', proxyReq);
-    console.log('=======')
-    
     const parsed = JSON.parse(proxyReq.bodyContent)
     parsed.data.attributes.date = Date.now();
     proxyReq.bodyContent = JSON.stringify(parsed);
-    console.log('proxyReq styf2f', proxyReq.bodyContent );
+    return proxyReq;
+  },
+};
+
+const removeDateFromProxyRequest = {
+  decorateRequest: function(proxyReq, originalReq) {
+    const parsed = JSON.parse(proxyReq.bodyContent)
+    delete parsed.data.attributes.date;
+    proxyReq.bodyContent = JSON.stringify(parsed);
     return proxyReq;
   },
 };
