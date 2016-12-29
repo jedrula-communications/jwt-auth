@@ -122,6 +122,7 @@ const removeDateFromProxyRequest = {
   },
 };
 
+app.patch('/posts*', proxy(jsonApiServer, removeDateFromProxyRequest));
 app.post('/posts', proxy(jsonApiServer, addCreationDateOptions));
 
 app.use('/', proxy(jsonApiServer));
