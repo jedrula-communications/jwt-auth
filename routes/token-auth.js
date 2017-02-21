@@ -4,11 +4,11 @@ const request = require('request');
 const tokenUtils = require('../utils/jwt');
 const async = require('async');
 const URI = require('urijs');
-const config = require('../config');
+const config = require('config');
+const jsonApiServer = config.get('jsonApiServer');
+console.log('got config ', jsonApiServer);
 const JSONAPIDeserializer = require('jsonapi-serializer').Deserializer;
 const bodyParser = require('body-parser');
-
-const { jsonApiServer } = config;
 
 //TODO make sure that this uses SSL
 module.exports = [bodyParser.json(), function (req, res, next) {

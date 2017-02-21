@@ -1,8 +1,9 @@
 const URI = require('urijs');
 const jwt = require('./utils/jwt');
 const tokenUtils = require('./utils/jwt');
-const config = require('./config');
-const { jsonApiServer } = config;
+const config = require('config');
+const jsonApiServer = config.get('jsonApiServer');
+console.log('got config ', jsonApiServer);
 const request = require('request');
 
 const express = require('express');
