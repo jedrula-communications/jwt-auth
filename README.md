@@ -26,3 +26,11 @@ you can change it by providing a config file like production.js and spinning up 
 node index.js
 ```
 
+4.1. ... as a service
+```
+sudo forever-service install jwt-auth-master --script index.js e.g. -e "NODE_ENV=lan"
+sudo service jwt-auth-master start
+```
+
+[more on that here](http://jedrula-app.surge.sh/post/e58f4fd4-bda4-4a1d-801b-d68cc255a63f)
+
