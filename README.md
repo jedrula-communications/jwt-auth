@@ -28,7 +28,7 @@ node index.js
 
 4.1. ... as a service
 ```
-sudo forever-service install jwt-auth-master --script index.js e.g. -e "NODE_ENV=lan"
+sudo forever-service install jwt-auth-master --script index.js -e "NODE_ENV=lan"
 sudo service jwt-auth-master start
 ```
 
